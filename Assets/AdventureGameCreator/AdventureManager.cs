@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
 using AdventureGameCreator.Entities;
+using System;
 
 namespace AdventureGameCreator
 {
@@ -13,11 +14,14 @@ namespace AdventureGameCreator
         public Text _location;
         public Text _story;
 
+        public Text _inventory;
+
         // configuration
         private const string dataFilePath = "/StreamingAssets/XML/adventure_data.xml";
         private const int startLocation = 0;
 
         // private fields
+        private Player _player = null;
         private Adventure _adventure = null;
         private Location _currentLocation = null;
 
@@ -64,6 +68,9 @@ namespace AdventureGameCreator
         /// </summary>
         private void Start()
         {
+            // create new player
+            _player = new Player();
+
             // load adventure data
             _adventure = Adventure.Load(Application.dataPath + dataFilePath);
             
@@ -87,6 +94,18 @@ namespace AdventureGameCreator
             _story.text = _currentLocation.description;
 
             DisplayConnectionOptions();
+            DisplayInventoryItems();    // NOTE: Not sure if this is a sensible place for this, may move
+        }
+
+        /// <summary>
+        /// Displays each item in the player's inventory
+        /// </summary>
+        private void DisplayInventoryItems()
+        {
+            foreach(InventoryItem inventoryItem in _player.inventory.items)
+            {
+                _inventory.text += inventoryItem.name + "\n";
+            }        
         }
 
         /// <summary>
