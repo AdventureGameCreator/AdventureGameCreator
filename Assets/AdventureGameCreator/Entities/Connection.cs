@@ -1,6 +1,5 @@
 ﻿namespace AdventureGameCreator.Entities
 {
-    [System.Serializable]
     public class Connection
     {
         public int id;

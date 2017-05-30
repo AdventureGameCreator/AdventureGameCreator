@@ -1,13 +1,13 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
 using AdventureGameCreator.Entities;
-using System;
 
 namespace AdventureGameCreator
 {
     // NOTE:    Could add a [RequiredComponent] of type AdventureDataService
     //          this would be an interface, allowing different types of the
     //          data service to be used, XML, database, www etc
+    //          Would mean exposing the underyling data service though
     public class AdventureManager : MonoBehaviour
     {
         // UI components for display
@@ -50,8 +50,11 @@ namespace AdventureGameCreator
         /// </summary>
         private void SubscribeDelegates()
         {
-            // connection options validation
+            // connection options
             onKeyPress += OnConnectionSelected;
+
+            // item options
+            onKeyPress += OnItemSelected;
         }
 
         /// <summary>
@@ -59,8 +62,11 @@ namespace AdventureGameCreator
         /// </summary>
         private void UnSubscribeDelegates()
         {
-            // connection options validation
+            // connection options
             onKeyPress -= OnConnectionSelected;
+
+            // item options
+            onKeyPress -= OnItemSelected;
         }
 
         /// <summary>
@@ -73,7 +79,7 @@ namespace AdventureGameCreator
 
             // load adventure data
             _adventure = Adventure.Load(Application.dataPath + dataFilePath);
-            
+
             Begin();
         }
         
@@ -83,6 +89,7 @@ namespace AdventureGameCreator
         private void Begin()
         {
             UpdateLocation(startLocation);
+            DisplayInventoryItems();    // NOTE: Not sure if this is a sensible place for this, may move
         }
 
         /// <summary>
@@ -94,20 +101,9 @@ namespace AdventureGameCreator
             _story.text = _currentLocation.description;
 
             DisplayConnectionOptions();
-            DisplayInventoryItems();    // NOTE: Not sure if this is a sensible place for this, may move
+            DisplayItems();
         }
-
-        /// <summary>
-        /// Displays each item in the player's inventory
-        /// </summary>
-        private void DisplayInventoryItems()
-        {
-            foreach(InventoryItem inventoryItem in _player.inventory.items)
-            {
-                _inventory.text += inventoryItem.name + "\n";
-            }        
-        }
-
+        
         /// <summary>
         /// Displays each connection option to the player
         /// </summary>
@@ -122,6 +118,31 @@ namespace AdventureGameCreator
                 connectionOption = "[ " + connection.key + " ] " + connection.descriptor + "   ";
 
                 _story.text += connectionOption;
+            }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        private void DisplayItems()
+        {
+            // TODO: Change this
+            _story.text += "\n\n";
+
+            foreach (Item item in _currentLocation.items)
+            {
+                _story.text += "[ " + item.key + " ] " + item.name + " ";
+            }
+        }
+
+        /// <summary>
+        /// Displays each item in the player's inventory
+        /// </summary>
+        private void DisplayInventoryItems()
+        {
+            foreach (Item item in _player.inventory.items)
+            {
+                _inventory.text += item.name + "\n";
             }
         }
 
@@ -151,6 +172,52 @@ namespace AdventureGameCreator
                     UpdateLocation(connection.id);
                 }
             }
+        }
+
+
+        /// <summary>
+        /// Checks to see if an item has been selected
+        /// </summary>
+        /// <param name="key">The key which was pressed</param>
+        private void OnItemSelected(string key)
+        {
+            // NOTE: Consider - calculating key based on all of the connections text at run time?
+            //                  e.g first letter of string, second if first is taken etc
+            //                  For actions this could be the first letter of the verb 
+            //                  For items this could be the first letter of the noun
+
+            foreach (Item item in _currentLocation.items)
+            {
+                if (item.key.ToUpper() == key.ToUpper())
+                {
+                    // TODO: Refactor
+                    // TODO: This needs expanding on, for now we will just take the item
+                    _player.inventory.items.Add(item);
+
+                    // remove item from location (do this first)
+                    _currentLocation.items.Remove(item);
+
+                    // update the current location
+                    UpdateLocation(_currentLocation.id);        // TODO: Need to do this at the moment as the items are concatenated to the story text
+
+                    // TODO: Need to check ObservableCollections<T>, can raise an event from those
+                    //       For now, call a method to update
+                    UpdateInventory();
+
+                    // exit the loop
+                    break;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Refreshes the content of the inventory
+        /// </summary>
+        private void UpdateInventory()
+        {
+            _inventory.text = string.Empty;
+
+            DisplayInventoryItems();
         }
 
         /// <summary>

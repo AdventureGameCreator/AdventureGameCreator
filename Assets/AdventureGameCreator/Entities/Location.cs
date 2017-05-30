@@ -2,7 +2,6 @@
 
 namespace AdventureGameCreator.Entities
 {
-    [System.Serializable]
     public class Location 
     {
         public int id;
@@ -10,5 +9,6 @@ namespace AdventureGameCreator.Entities
         public string description;
 
         public List<Connection> connections = new List<Connection>();
+        public List<Item> items = new List<Item>();
     }
 }

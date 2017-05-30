@@ -1,7 +1,8 @@
 ﻿namespace AdventureGameCreator.Entities
 {
-    public class InventoryItem
+    public class Item
     {
         public string name;
+        public string key;
     }
 }

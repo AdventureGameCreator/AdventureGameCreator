@@ -1,13 +1,15 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using AdventureGameCreator.Data.DataServices;
 using AdventureGameCreator.Exceptions;
 
 namespace AdventureGameCreator.Entities
 {
-    [System.Serializable]
     public class Adventure
     {
         public List<Location> locations = new List<Location>();
+
+        // TOOD: Complete Documentation
 
         /// <summary>
         /// 
@@ -16,14 +18,21 @@ namespace AdventureGameCreator.Entities
         /// <returns></returns>
         public static Adventure Load(string dataFilePath)
         {
-            Adventure adventure = XMLDataService.Instance.Load<Adventure>(dataFilePath);
+
+
+            // Adventure adventure = XMLDataService.Instance.Load<Adventure>(dataFilePath);
+
+
+            Type[] extraTypes = new Type[] { typeof(Weapon), typeof(Equipment) };
+
+            Adventure adventure = XMLDataService.Instance.Load<Adventure>(dataFilePath, extraTypes);
 
             // validate adventure data
             ValidateAdventureData(adventure);
 
             return adventure;
         }
-                
+
         /// <summary>
         /// 
         /// </summary>
