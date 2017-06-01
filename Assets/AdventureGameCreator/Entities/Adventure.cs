@@ -9,12 +9,10 @@ namespace AdventureGameCreator.Entities
     {
         public List<Location> locations = new List<Location>();
 
-        // TOOD: Complete Documentation
-
         /// <summary>
-        /// 
+        /// Loads and validates the adventure data for the specified file path
         /// </summary>
-        /// <param name="dataFilePath"></param>
+        /// <param name="dataFilePath">The file path for the adventure data</param>
         /// <returns></returns>
         public static Adventure Load(string dataFilePath)
         {
@@ -34,7 +32,7 @@ namespace AdventureGameCreator.Entities
         }
 
         /// <summary>
-        /// 
+        /// Validates the adventure data
         /// </summary>
         private static void ValidateAdventureData(Adventure adventure)
         {
@@ -42,6 +40,7 @@ namespace AdventureGameCreator.Entities
             {
                 List<string> keys = new List<string>();
 
+                // TODO: Refactor to remove duplication and better handle exceptions
                 foreach (Connection connection in location.connections)
                 {
                     if (!keys.Contains(connection.key.ToUpper()))
@@ -50,9 +49,22 @@ namespace AdventureGameCreator.Entities
                     }
                     else
                     {
-                        throw new DuplicateConnectionKeyFoundException("Key '" + connection.key.ToUpper() + "' already exists for Location : '" + location.title + "'");
+                        throw new DuplicateConnectionKeyFoundException("Connection Key '" + connection.key.ToUpper() + "' already exists for Location : '" + location.title + "'");
                     }
                 }
+
+                foreach(Item item in location.items)
+                {
+                    if (!keys.Contains(item.key.ToUpper()))
+                    {
+                        keys.Add(item.key.ToUpper());
+                    }
+                    else
+                    {
+                        throw new DuplicateConnectionKeyFoundException("Item Key '" + item.key.ToUpper() + "' already exists for Location : '" + location.title + "'");
+                    }
+                }
+
             }
         }
     }

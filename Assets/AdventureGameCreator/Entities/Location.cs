@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using AdventureGameCreator.Collections.Generic;
 
 namespace AdventureGameCreator.Entities
 {
@@ -9,6 +10,6 @@ namespace AdventureGameCreator.Entities
         public string description;
 
         public List<Connection> connections = new List<Connection>();
-        public List<Item> items = new List<Item>();
+        public ObservableList<Item> items = new ObservableList<Item>();
     }
 }

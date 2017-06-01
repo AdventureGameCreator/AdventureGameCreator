@@ -4,10 +4,20 @@ using AdventureGameCreator.Entities;
 
 namespace AdventureGameCreator
 {
+
+    // NOTE:    Consider refactoring player input so that delegates are handled in the same way as
+    //          the ObservableList delegates
+
+    // NOTE:    Consider calculating option key based on connection descriptor / item name at run time?
+    //          e.g first letter of string, second if first is taken etc
+    //          Need to have some reserved characters for actions, such as [E]xamine, [L]ook etc
+
+
     // NOTE:    Could add a [RequiredComponent] of type AdventureDataService
     //          this would be an interface, allowing different types of the
     //          data service to be used, XML, database, www etc
     //          Would mean exposing the underyling data service though
+
     public class AdventureManager : MonoBehaviour
     {
         // UI components for display
@@ -77,19 +87,41 @@ namespace AdventureGameCreator
             // create new player
             _player = new Player();
 
+            // wire up inventory and location item delegates
+            _player.inventory.items.Updated += InventoryItems_Updated;
+
             // load adventure data
             _adventure = Adventure.Load(Application.dataPath + dataFilePath);
 
             Begin();
+
+
+            _currentLocation.items.Updated += LocationItems_Updated;
         }
-        
+
+        /// <summary>
+        /// Handles the Updated method for the inventory's item collection
+        /// </summary>
+        private void InventoryItems_Updated()
+        {
+            DisplayInventoryItems();
+        }
+
+        /// <summary>
+        /// Handles the Updated method for the location's item collection
+        /// </summary>
+        private void LocationItems_Updated()
+        {
+            DisplayCurrentLocation();
+        }
+
         /// <summary>
         /// Begins the adventure
         /// </summary>
         private void Begin()
         {
-            UpdateLocation(startLocation);
-            DisplayInventoryItems();    // NOTE: Not sure if this is a sensible place for this, may move
+            MoveToLocation(startLocation);
+            DisplayInventoryItems();
         }
 
         /// <summary>
@@ -122,16 +154,19 @@ namespace AdventureGameCreator
         }
 
         /// <summary>
-        /// 
+        /// Displays each item option to the player
         /// </summary>
         private void DisplayItems()
         {
-            // TODO: Change this
+            string itemOption;
+
             _story.text += "\n\n";
 
             foreach (Item item in _currentLocation.items)
             {
-                _story.text += "[ " + item.key + " ] " + item.name + " ";
+                itemOption = "[ " + item.key + " ] " + item.name + " ";
+
+                _story.text += itemOption;
             }
         }
 
@@ -140,17 +175,20 @@ namespace AdventureGameCreator
         /// </summary>
         private void DisplayInventoryItems()
         {
+            _inventory.text = string.Empty;
+
             foreach (Item item in _player.inventory.items)
             {
                 _inventory.text += item.name + "\n";
             }
         }
 
+
         /// <summary>
-        /// Updates the current player location
+        /// Updates the player's current location
         /// </summary>
         /// <param name="locationID">The ID of the location</param>
-        private void UpdateLocation(int locationID)
+        private void MoveToLocation(int locationID)
         {
             _currentLocation = _adventure.locations[locationID];
             DisplayCurrentLocation();
@@ -162,18 +200,16 @@ namespace AdventureGameCreator
         /// <param name="key">The key which was pressed</param>
         private void OnConnectionSelected(string key)
         {
-            // NOTE: Consider - calculating key based on all of the connections text at run time?
-            //                  e.g first letter of string, second if first is taken etc
-
             foreach (Connection connection in _currentLocation.connections)
             {
                 if (connection.key.ToUpper() == key.ToUpper())
                 {
-                    UpdateLocation(connection.id);
+                    MoveToLocation(connection.id);
+
+                    break;
                 }
             }
         }
-
 
         /// <summary>
         /// Checks to see if an item has been selected
@@ -181,43 +217,25 @@ namespace AdventureGameCreator
         /// <param name="key">The key which was pressed</param>
         private void OnItemSelected(string key)
         {
-            // NOTE: Consider - calculating key based on all of the connections text at run time?
-            //                  e.g first letter of string, second if first is taken etc
-            //                  For actions this could be the first letter of the verb 
-            //                  For items this could be the first letter of the noun
-
             foreach (Item item in _currentLocation.items)
             {
                 if (item.key.ToUpper() == key.ToUpper())
                 {
-                    // TODO: Refactor
-                    // TODO: This needs expanding on, for now we will just take the item
-                    _player.inventory.items.Add(item);
+                    TakeItem(item);
 
-                    // remove item from location (do this first)
-                    _currentLocation.items.Remove(item);
-
-                    // update the current location
-                    UpdateLocation(_currentLocation.id);        // TODO: Need to do this at the moment as the items are concatenated to the story text
-
-                    // TODO: Need to check ObservableCollections<T>, can raise an event from those
-                    //       For now, call a method to update
-                    UpdateInventory();
-
-                    // exit the loop
                     break;
                 }
             }
         }
 
         /// <summary>
-        /// Refreshes the content of the inventory
+        /// Adds the specified item to the player's inventory and removes it from the location
         /// </summary>
-        private void UpdateInventory()
+        /// <param name="item">The item to take</param>
+        private void TakeItem(Item item)
         {
-            _inventory.text = string.Empty;
-
-            DisplayInventoryItems();
+            _player.inventory.items.Add(item);
+            _currentLocation.items.Remove(item);
         }
 
         /// <summary>
