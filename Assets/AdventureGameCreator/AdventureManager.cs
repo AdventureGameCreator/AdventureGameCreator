@@ -1,9 +1,18 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
 using AdventureGameCreator.Entities;
+using AdventureGameCreator.UI;
+using System;
 
 namespace AdventureGameCreator
 {
+
+    // NOTE:    Consider "actions" in more depth
+    //          location action = search
+    //          game actions = save / load / quit
+    //          player actions = attack / view inventory / take item / drop item
+    //          item actions = examine?  / use 
+    //          actions may / may not be relevant in all conditions, for example, death / lose location - no point searching
 
     // NOTE:    Consider refactoring player input so that delegates are handled in the same way as
     //          the ObservableList delegates
@@ -11,7 +20,6 @@ namespace AdventureGameCreator
     // NOTE:    Consider calculating option key based on connection descriptor / item name at run time?
     //          e.g first letter of string, second if first is taken etc
     //          Need to have some reserved characters for actions, such as [E]xamine, [L]ook etc
-
 
     // NOTE:    Could add a [RequiredComponent] of type AdventureDataService
     //          this would be an interface, allowing different types of the
@@ -35,6 +43,8 @@ namespace AdventureGameCreator
         private Adventure _adventure = null;
         private Location _currentLocation = null;
 
+        private InventoryDisplay _inventoryDisplay = null;
+
         // delegate for managing keyboard input
         private delegate void OnKeyPress(string key);
         private OnKeyPress onKeyPress;
@@ -52,7 +62,7 @@ namespace AdventureGameCreator
         /// </summary>
         private void OnDisable()
         {
-            UnSubscribeDelegates();
+            UnsubscribeDelegates();
         }
 
         /// <summary>
@@ -61,22 +71,28 @@ namespace AdventureGameCreator
         private void SubscribeDelegates()
         {
             // connection options
-            onKeyPress += OnConnectionSelected;
+            onKeyPress += Connection_Selected;
 
             // item options
-            onKeyPress += OnItemSelected;
+            onKeyPress += Item_Selected;
+
+            // action options
+            onKeyPress += Action_Selected;
         }
 
         /// <summary>
-        /// UnSubscribe our delegates
+        /// Unsubscribe our delegates
         /// </summary>
-        private void UnSubscribeDelegates()
+        private void UnsubscribeDelegates()
         {
             // connection options
-            onKeyPress -= OnConnectionSelected;
+            onKeyPress -= Connection_Selected;
 
             // item options
-            onKeyPress -= OnItemSelected;
+            onKeyPress -= Item_Selected;
+
+            // action options
+            onKeyPress -= Action_Selected;
         }
 
         /// <summary>
@@ -87,24 +103,33 @@ namespace AdventureGameCreator
             // create new player
             _player = new Player();
 
-            // wire up inventory and location item delegates
-            _player.inventory.items.Updated += InventoryItems_Updated;
-
             // load adventure data
             _adventure = Adventure.Load(Application.dataPath + dataFilePath);
 
-            Begin();
+            // set start location
+            _currentLocation = _adventure.locations[startLocation];
 
+            // instantiate the inventory display
+            _inventoryDisplay = new InventoryDisplay(_inventory, _player.Inventory);
 
+            // hide inventory
+            _inventoryDisplay.Disable();
+
+            // wire up inventory and location item delegates
+            _player.Inventory.items.Updated += _inventoryDisplay.InventoryItems_Updated;
+            _adventure.locations.Changed += Location_Changed;       // TODO:    This won't work in the same way as location/items, may need an ObservableEntity
             _currentLocation.items.Updated += LocationItems_Updated;
+            _currentLocation.items.Changed += LocationItems_Changed;
+
+            Begin();
         }
 
         /// <summary>
-        /// Handles the Updated method for the inventory's item collection
+        /// Handles the Changed method for the adventure's location collection
         /// </summary>
-        private void InventoryItems_Updated()
+        private void Location_Changed(int obj)
         {
-            DisplayInventoryItems();
+            DisplayCurrentLocation();
         }
 
         /// <summary>
@@ -116,12 +141,19 @@ namespace AdventureGameCreator
         }
 
         /// <summary>
+        /// Handles the Changed method for the location's item collection
+        /// </summary>
+        private void LocationItems_Changed(int index)
+        {
+            DisplayCurrentLocation();
+        }
+
+        /// <summary>
         /// Begins the adventure
         /// </summary>
         private void Begin()
         {
-            MoveToLocation(startLocation);
-            DisplayInventoryItems();
+            DisplayCurrentLocation();
         }
 
         /// <summary>
@@ -132,10 +164,39 @@ namespace AdventureGameCreator
             _location.text = _currentLocation.title;
             _story.text = _currentLocation.description;
 
-            DisplayConnectionOptions();
             DisplayItems();
+            DisplayConnectionOptions();
+            DisplayActions();
         }
-        
+
+        /// <summary>
+        /// Displays available actions
+        /// </summary>
+        private void DisplayActions()
+        {
+            // TODO:    This needs much more work
+            //          Available actions should be based on target, e.g. location or item
+            string actionOption;
+
+            _story.text += "\n\n";
+
+            if (_currentLocation.isSearchable)
+            {
+                if (!_currentLocation.searched)
+                {
+                    // actionOption = "[ " + actionOption.key + " ] " + actionOption.descriptor + "   ";
+                    actionOption = "[S] Search   ";
+
+                    _story.text += actionOption;
+                }
+            }
+
+            // actionOption = "[ " + actionOption.key + " ] " + actionOption.descriptor + "   ";
+            actionOption = "[I] Inventory   ";
+
+            _story.text += actionOption;
+        }
+
         /// <summary>
         /// Displays each connection option to the player
         /// </summary>
@@ -164,25 +225,14 @@ namespace AdventureGameCreator
 
             foreach (Item item in _currentLocation.items)
             {
-                itemOption = "[ " + item.key + " ] " + item.name + " ";
+                if (item.isVisible)
+                {
+                    itemOption = "[ " + item.key + " ] " + item.name + " ";
 
-                _story.text += itemOption;
+                    _story.text += itemOption;
+                }
             }
         }
-
-        /// <summary>
-        /// Displays each item in the player's inventory
-        /// </summary>
-        private void DisplayInventoryItems()
-        {
-            _inventory.text = string.Empty;
-
-            foreach (Item item in _player.inventory.items)
-            {
-                _inventory.text += item.name + "\n";
-            }
-        }
-
 
         /// <summary>
         /// Updates the player's current location
@@ -198,7 +248,7 @@ namespace AdventureGameCreator
         /// Checks to see if a connection has been selected
         /// </summary>
         /// <param name="key">The key which was pressed</param>
-        private void OnConnectionSelected(string key)
+        private void Connection_Selected(string key)
         {
             foreach (Connection connection in _currentLocation.connections)
             {
@@ -215,28 +265,51 @@ namespace AdventureGameCreator
         /// Checks to see if an item has been selected
         /// </summary>
         /// <param name="key">The key which was pressed</param>
-        private void OnItemSelected(string key)
+        private void Item_Selected(string key)
         {
             foreach (Item item in _currentLocation.items)
             {
-                if (item.key.ToUpper() == key.ToUpper())
+                if (item.isVisible)
                 {
-                    TakeItem(item);
+                    if (item.key.ToUpper() == key.ToUpper())
+                    {
+                        _player.Take(item);
 
-                    break;
+                        _currentLocation.items.Remove(item);
+
+                        break;
+                    }
                 }
             }
         }
 
         /// <summary>
-        /// Adds the specified item to the player's inventory and removes it from the location
+        /// Checks to see if an action has been selected
         /// </summary>
-        /// <param name="item">The item to take</param>
-        private void TakeItem(Item item)
+        /// <param name="key">The key which was pressed</param>
+        private void Action_Selected(string key)
         {
-            _player.inventory.items.Add(item);
-            _currentLocation.items.Remove(item);
+            // TODO:    This needs much more work 
+            //          Available actions should be based on target, e.g. location or item
+            if (key.ToUpper() == "S")
+            {
+                if (_currentLocation.isSearchable)
+                {
+                    if(!_currentLocation.searched)
+                    {
+                        _player.Search(ref _currentLocation);
+                        DisplayCurrentLocation();       // TODO:    May need an ObservableEntity instead of doing this
+                    }
+                }
+            }
+
+            if (key.ToUpper() == "I")
+            {
+                _inventoryDisplay.Toggle();
+            }
         }
+
+
 
         /// <summary>
         /// Update is called once per frame

@@ -2,12 +2,13 @@
 using System.Collections.Generic;
 using AdventureGameCreator.Data.DataServices;
 using AdventureGameCreator.Exceptions;
+using AdventureGameCreator.Collections.Generic;
 
 namespace AdventureGameCreator.Entities
 {
     public class Adventure
     {
-        public List<Location> locations = new List<Location>();
+        public ObservableList<Location> locations = new ObservableList<Location>();
 
         /// <summary>
         /// Loads and validates the adventure data for the specified file path
@@ -40,7 +41,7 @@ namespace AdventureGameCreator.Entities
             {
                 List<string> keys = new List<string>();
 
-                // TODO: Refactor to remove duplication and better handle exceptions
+                // TODO:    Refactor to remove duplication and better handle exceptions
                 foreach (Connection connection in location.connections)
                 {
                     if (!keys.Contains(connection.key.ToUpper()))
@@ -64,6 +65,8 @@ namespace AdventureGameCreator.Entities
                         throw new DuplicateConnectionKeyFoundException("Item Key '" + item.key.ToUpper() + "' already exists for Location : '" + location.title + "'");
                     }
                 }
+
+                // TODO:    Check for the use of keys for reserved words (actions [S]earch etc)
 
             }
         }

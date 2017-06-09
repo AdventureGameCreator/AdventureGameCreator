@@ -5,21 +5,24 @@
       <id>0</id>
       <title>Entrance</title>
       <description>You are standing at the entrance to an overgrown cave.  The fading daylight bearly illuminates a few feet inside. You take a moment to steady your nerves and prepare for what may lay ahead.  You light your torch.</description>
+      <isSearchable>true</isSearchable>
       <connections>
         <Connection>
           <id>1</id>
-          <descriptor>Step bravely into the cave</descriptor>
-          <key>S</key>
+          <descriptor>Bravely enter the cave</descriptor>
+          <key>E</key>
         </Connection>
       </connections>
       <items>
         <Item xsi:type="Weapon">
           <name>Silver Dagger</name>
           <key>D</key>
+          <isVisible>false</isVisible>
         </Item>
         <Item xsi:type="Equipment">
           <name>Rope</name>
           <key>R</key>
+          <isVisible>false</isVisible>
         </Item>
       </items>
     </Location>
@@ -27,6 +30,7 @@
       <id>1</id>
       <title>The Cave</title>
       <description>Feeling the uneven ground beneath your feet you stumble into the cave as your torch dimly lights your path. A breeze from the east makes your torch flicker, shadowy figures are cast against the rock walls of the cave.</description>
+      <isSearchable>true</isSearchable>
       <connections>
         <Connection>
           <id>2</id>
@@ -45,6 +49,7 @@
       <id>2</id>
       <title>The Pit</title>
       <description>The breeze from the east increases and your torch is extinguished.  You reach out in the darkness and shuffle further forwards.  For a few moments your eyes try to adjust to the utter darkness of the cave before you feel yourself falling.You hit the ground hard and hear a crack, a sudden and sharp pain in your leg causes you to cry out in agony. Summoning all of your might to manage to stand.  Reaching around you it is clear you have fallen into some kind of pit.The walls of the pit are smooth, and you are unable to reach the top.  You resign yourself to the fact that you will spend the remainder of your short life here, dying sometime after your provision run out</description>
+      <isSearchable>false</isSearchable>
       <connections />
       <items />
     </Location>
@@ -70,6 +75,7 @@
       <id>4</id>
       <title>Daylight</title>
       <description>As you head north you can see daylight in the distance, it would seem you have located an exit from the cave.  Whilst disappointed you did not find any treasure on your adventure, you breathe a sigh of relief as you realise how ill prepared you were for this adventure.  You curse your foolishness but swear to be more prepared the next time you set upon a quest.</description>
+      <isSearchable>false</isSearchable>      
       <connections />
       <items />
     </Location>

@@ -4,5 +4,6 @@
     {
         public string name;
         public string key;
+        public bool isVisible;
     }
 }
