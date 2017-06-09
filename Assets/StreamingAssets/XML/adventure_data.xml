@@ -1,83 +1,83 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <Adventure xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
-  <locations>
+  <Locations>
     <Location>
-      <id>0</id>
-      <title>Entrance</title>
-      <description>You are standing at the entrance to an overgrown cave.  The fading daylight bearly illuminates a few feet inside. You take a moment to steady your nerves and prepare for what may lay ahead.  You light your torch.</description>
-      <isSearchable>true</isSearchable>
-      <connections>
+      <ID>0</ID>
+      <Title>Entrance</Title>
+      <Description>You are standing at the entrance to an overgrown cave.  The fading daylight bearly illuminates a few feet insIDe. You take a moment to steady your nerves and prepare for what may lay ahead.  You light your torch.</Description>
+      <IsSearchable>true</IsSearchable>
+      <Connections>
         <Connection>
-          <id>1</id>
-          <descriptor>Bravely enter the cave</descriptor>
-          <key>E</key>
+          <ID>1</ID>
+          <Descriptor>Bravely enter the cave</Descriptor>
+          <Key>E</Key>
         </Connection>
-      </connections>
-      <items>
+      </Connections>
+      <Items>
         <Item xsi:type="Weapon">
-          <name>Silver Dagger</name>
-          <key>D</key>
-          <isVisible>false</isVisible>
+          <Name>Silver Dagger</Name>
+          <Key>D</Key>
+          <IsVisible>false</IsVisible>
         </Item>
         <Item xsi:type="Equipment">
-          <name>Rope</name>
-          <key>R</key>
-          <isVisible>false</isVisible>
+          <Name>Rope</Name>
+          <Key>R</Key>
+          <IsVisible>false</IsVisible>
         </Item>
-      </items>
+      </Items>
     </Location>
     <Location>
-      <id>1</id>
-      <title>The Cave</title>
-      <description>Feeling the uneven ground beneath your feet you stumble into the cave as your torch dimly lights your path. A breeze from the east makes your torch flicker, shadowy figures are cast against the rock walls of the cave.</description>
-      <isSearchable>true</isSearchable>
-      <connections>
+      <ID>1</ID>
+      <Title>The Cave</Title>
+      <Description>Feeling the uneven ground beneath your feet you stumble into the cave as your torch dimly lights your path. A breeze from the east makes your torch flicker, shadowy figures are cast against the rock walls of the cave.</Description>
+      <IsSearchable>true</IsSearchable>
+      <Connections>
         <Connection>
-          <id>2</id>
-          <descriptor>West</descriptor>
-          <key>W</key>
+          <ID>2</ID>
+          <Descriptor>West</Descriptor>
+          <Key>W</Key>
         </Connection>
         <Connection>
-          <id>3</id>
-          <descriptor>East</descriptor>
-          <key>E</key>
+          <ID>3</ID>
+          <Descriptor>East</Descriptor>
+          <Key>E</Key>
         </Connection>
-      </connections>
-      <items />
+      </Connections>
+      <Items />
     </Location>
     <Location>
-      <id>2</id>
-      <title>The Pit</title>
-      <description>The breeze from the east increases and your torch is extinguished.  You reach out in the darkness and shuffle further forwards.  For a few moments your eyes try to adjust to the utter darkness of the cave before you feel yourself falling.You hit the ground hard and hear a crack, a sudden and sharp pain in your leg causes you to cry out in agony. Summoning all of your might to manage to stand.  Reaching around you it is clear you have fallen into some kind of pit.The walls of the pit are smooth, and you are unable to reach the top.  You resign yourself to the fact that you will spend the remainder of your short life here, dying sometime after your provision run out</description>
-      <isSearchable>false</isSearchable>
-      <connections />
-      <items />
+      <ID>2</ID>
+      <Title>The Pit</Title>
+      <Description>The breeze from the east increases and your torch is extinguished.  You reach out in the darkness and shuffle further forwards.  For a few moments your eyes try to adjust to the utter darkness of the cave before you feel yourself falling.You hit the ground hard and hear a crack, a sudden and sharp pain in your leg causes you to cry out in agony. Summoning all of your might to manage to stand.  Reaching around you it is clear you have fallen into some kind of pit.The walls of the pit are smooth, and you are unable to reach the top.  You resign yourself to the fact that you will spend the remainder of your short life here, dying sometime after your provision run out</Description>
+      <IsSearchable>false</IsSearchable>
+      <Connections />
+      <Items />
     </Location>
     <Location>
-      <id>3</id>
-      <title>The Goblins Lair</title>
-      <description>You defeat the goblin with a mighty swing of your torch, burning embers are cast through the air.  The goblin groans as it falls to the floor, dead.  Having steadied yourself you search the goblin's body, he has nothing of value and you realise he must have been there to protect something else.  As you consider your options you feel a familiar breeze and the smell of less dank air coming from the north.</description>
-      <connections>
+      <ID>3</ID>
+      <Title>The Goblins Lair</Title>
+      <Description>You defeat the goblin with a mighty swing of your torch, burning embers are cast through the air.  The goblin groans as it falls to the floor, dead.  Having steadied yourself you search the goblin's body, he has nothing of value and you realise he must have been there to protect something else.  As you consIDer your options you feel a familiar breeze and the smell of less dank air coming from the north.</Description>
+      <Connections>
         <Connection>
-          <id>1</id>
-          <descriptor>West</descriptor>
-          <key>W</key>
+          <ID>1</ID>
+          <Descriptor>West</Descriptor>
+          <Key>W</Key>
         </Connection>
         <Connection>
-          <id>4</id>
-          <descriptor>North</descriptor>
-          <key>N</key>
+          <ID>4</ID>
+          <Descriptor>North</Descriptor>
+          <Key>N</Key>
         </Connection>
-      </connections>
-      <items />
+      </Connections>
+      <Items />
     </Location>
     <Location>
-      <id>4</id>
-      <title>Daylight</title>
-      <description>As you head north you can see daylight in the distance, it would seem you have located an exit from the cave.  Whilst disappointed you did not find any treasure on your adventure, you breathe a sigh of relief as you realise how ill prepared you were for this adventure.  You curse your foolishness but swear to be more prepared the next time you set upon a quest.</description>
-      <isSearchable>false</isSearchable>      
-      <connections />
-      <items />
+      <ID>4</ID>
+      <Title>Daylight</Title>
+      <Description>As you head north you can see daylight in the distance, it would seem you have located an exit from the cave.  Whilst disappointed you dID not find any treasure on your adventure, you breathe a sigh of relief as you realise how ill prepared you were for this adventure.  You curse your foolishness but swear to be more prepared the next time you set upon a quest.</Description>
+      <IsSearchable>false</IsSearchable>      
+      <Connections />
+      <Items />
     </Location>
-  </locations>
+  </Locations>
 </Adventure>

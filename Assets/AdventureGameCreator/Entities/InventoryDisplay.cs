@@ -8,6 +8,7 @@ namespace AdventureGameCreator.UI
         private Text _display;
         private Inventory _inventory;
 
+
         /// <summary>
         /// default constructor
         /// </summary>
@@ -23,6 +24,7 @@ namespace AdventureGameCreator.UI
             _display = display;
             _inventory = inventory;
         }
+
 
         /// <summary>
         /// Toggles the display of the inventory
@@ -80,9 +82,9 @@ namespace AdventureGameCreator.UI
         {
             Clear();
 
-            foreach (Item item in _inventory.items)
+            foreach (Item item in _inventory.Items)
             {
-                _display.text += item.name + "\n";
+                _display.text += item.Name + "\n";
             }
         }
     }

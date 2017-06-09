@@ -2,8 +2,26 @@
 
 namespace AdventureGameCreator.Entities
 {
-    public class Inventory 
+    public class Inventory
     {
-        public ObservableList<Item> items = new ObservableList<Item>();
+        private ObservableList<Item> _items;
+
+
+        /// <summary>
+        /// Default constructor
+        /// </summary>
+        public Inventory()
+        {
+            _items = new ObservableList<Item>();
+        }
+
+
+        /// <summary>
+        /// Returns the inventory items
+        /// </summary>
+        public ObservableList<Item> Items
+        {
+            get { return _items; }
+        }
     }
 }

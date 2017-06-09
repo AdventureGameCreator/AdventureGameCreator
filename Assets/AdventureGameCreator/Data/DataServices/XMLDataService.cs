@@ -8,10 +8,12 @@ namespace AdventureGameCreator.Data.DataServices
     {
         private static XMLDataService instance;
 
+
         /// <summary>
         /// Default constructor
         /// </summary>
         private XMLDataService() { }
+
 
         /// <summary>
         /// Returns the instance of the XMLDataService

@@ -4,6 +4,7 @@
     {
         private Inventory _inventory;
 
+
         /// <summary>
         /// Default constructor
         /// </summary>
@@ -11,6 +12,7 @@
         {
             _inventory = new Inventory();
         }
+
 
         /// <summary>
         /// Returns the player's inventory
@@ -20,13 +22,14 @@
             get { return _inventory; }
         }
 
+
         /// <summary>
         /// Adds the specified item to the inventory
         /// </summary>
         /// <param name="item">The item to take</param>
         public void Take(Item item)
         {
-            _inventory.items.Add(item);
+            _inventory.Items.Add(item);
         }
 
         /// <summary>
@@ -35,7 +38,7 @@
         /// <param name="item">The item to drop</param>
         public void Drop(Item item)
         {
-            _inventory.items.Remove(item);
+            _inventory.Items.Remove(item);
         }
 
         /// <summary>

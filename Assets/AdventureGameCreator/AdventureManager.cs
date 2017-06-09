@@ -6,11 +6,11 @@ using System;
 
 namespace AdventureGameCreator
 {
+    // NOTE:    public fields removed but setters are required within properties in order to deserialize the xml data - I do not like!
 
     // NOTE:    Consider "actions" in more depth
-    //          location action = search
     //          game actions = save / load / quit
-    //          player actions = attack / view inventory / take item / drop item
+    //          player actions = attack / drop item
     //          item actions = examine?  / use 
     //          actions may / may not be relevant in all conditions, for example, death / lose location - no point searching
 
@@ -29,10 +29,10 @@ namespace AdventureGameCreator
     public class AdventureManager : MonoBehaviour
     {
         // UI components for display
-        public Text _location;
-        public Text _story;
+        [SerializeField] private Text _locationTitle;
+        [SerializeField] private Text _locationDescription;
 
-        public Text _inventory;
+        [SerializeField] private Text _inventory;
 
         // configuration
         private const string dataFilePath = "/StreamingAssets/XML/adventure_data.xml";
@@ -48,6 +48,7 @@ namespace AdventureGameCreator
         // delegate for managing keyboard input
         private delegate void OnKeyPress(string key);
         private OnKeyPress onKeyPress;
+
 
         /// <summary>
         /// Called when the object becomes enabled and active
@@ -107,7 +108,7 @@ namespace AdventureGameCreator
             _adventure = Adventure.Load(Application.dataPath + dataFilePath);
 
             // set start location
-            _currentLocation = _adventure.locations[startLocation];
+            _currentLocation = _adventure.Locations[startLocation];
 
             // instantiate the inventory display
             _inventoryDisplay = new InventoryDisplay(_inventory, _player.Inventory);
@@ -116,10 +117,10 @@ namespace AdventureGameCreator
             _inventoryDisplay.Disable();
 
             // wire up inventory and location item delegates
-            _player.Inventory.items.Updated += _inventoryDisplay.InventoryItems_Updated;
-            _adventure.locations.Changed += Location_Changed;       // TODO:    This won't work in the same way as location/items, may need an ObservableEntity
-            _currentLocation.items.Updated += LocationItems_Updated;
-            _currentLocation.items.Changed += LocationItems_Changed;
+            _player.Inventory.Items.Updated += _inventoryDisplay.InventoryItems_Updated;
+            _adventure.Locations.Changed += Location_Changed;       // TODO:    This won't work in the same way as location/items, may need an ObservableEntity
+            _currentLocation.Items.Updated += LocationItems_Updated;
+            _currentLocation.Items.Changed += LocationItems_Changed;
 
             Begin();
         }
@@ -161,8 +162,8 @@ namespace AdventureGameCreator
         /// </summary>
         private void DisplayCurrentLocation()
         {
-            _location.text = _currentLocation.title;
-            _story.text = _currentLocation.description;
+            _locationTitle.text = _currentLocation.Title;
+            _locationDescription.text = _currentLocation.Description;
 
             DisplayItems();
             DisplayConnectionOptions();
@@ -178,23 +179,23 @@ namespace AdventureGameCreator
             //          Available actions should be based on target, e.g. location or item
             string actionOption;
 
-            _story.text += "\n\n";
+            _locationDescription.text += "\n\n";
 
-            if (_currentLocation.isSearchable)
+            if (_currentLocation.IsSearchable)
             {
-                if (!_currentLocation.searched)
+                if (!_currentLocation.IsSearched)
                 {
                     // actionOption = "[ " + actionOption.key + " ] " + actionOption.descriptor + "   ";
                     actionOption = "[S] Search   ";
 
-                    _story.text += actionOption;
+                    _locationDescription.text += actionOption;
                 }
             }
 
             // actionOption = "[ " + actionOption.key + " ] " + actionOption.descriptor + "   ";
             actionOption = "[I] Inventory   ";
 
-            _story.text += actionOption;
+            _locationDescription.text += actionOption;
         }
 
         /// <summary>
@@ -204,13 +205,13 @@ namespace AdventureGameCreator
         {
             string connectionOption;
 
-            _story.text += "\n\n";
+            _locationDescription.text += "\n\n";
 
-            foreach (Connection connection in _currentLocation.connections)
+            foreach (Connection connection in _currentLocation.Connections)
             {
-                connectionOption = "[ " + connection.key + " ] " + connection.descriptor + "   ";
+                connectionOption = "[ " + connection.Key + " ] " + connection.Descriptor + "   ";
 
-                _story.text += connectionOption;
+                _locationDescription.text += connectionOption;
             }
         }
 
@@ -221,15 +222,15 @@ namespace AdventureGameCreator
         {
             string itemOption;
 
-            _story.text += "\n\n";
+            _locationDescription.text += "\n\n";
 
-            foreach (Item item in _currentLocation.items)
+            foreach (Item item in _currentLocation.Items)
             {
-                if (item.isVisible)
+                if (item.IsVisible)
                 {
-                    itemOption = "[ " + item.key + " ] " + item.name + " ";
+                    itemOption = "[ " + item.Key + " ] " + item.Name + " ";
 
-                    _story.text += itemOption;
+                    _locationDescription.text += itemOption;
                 }
             }
         }
@@ -240,7 +241,7 @@ namespace AdventureGameCreator
         /// <param name="locationID">The ID of the location</param>
         private void MoveToLocation(int locationID)
         {
-            _currentLocation = _adventure.locations[locationID];
+            _currentLocation = _adventure.Locations[locationID];
             DisplayCurrentLocation();
         }
 
@@ -250,11 +251,11 @@ namespace AdventureGameCreator
         /// <param name="key">The key which was pressed</param>
         private void Connection_Selected(string key)
         {
-            foreach (Connection connection in _currentLocation.connections)
+            foreach (Connection connection in _currentLocation.Connections)
             {
-                if (connection.key.ToUpper() == key.ToUpper())
+                if (connection.Key.ToUpper() == key.ToUpper())
                 {
-                    MoveToLocation(connection.id);
+                    MoveToLocation(connection.ID);
 
                     break;
                 }
@@ -267,15 +268,15 @@ namespace AdventureGameCreator
         /// <param name="key">The key which was pressed</param>
         private void Item_Selected(string key)
         {
-            foreach (Item item in _currentLocation.items)
+            foreach (Item item in _currentLocation.Items)
             {
-                if (item.isVisible)
+                if (item.IsVisible)
                 {
-                    if (item.key.ToUpper() == key.ToUpper())
+                    if (item.Key.ToUpper() == key.ToUpper())
                     {
                         _player.Take(item);
 
-                        _currentLocation.items.Remove(item);
+                        _currentLocation.Items.Remove(item);
 
                         break;
                     }
@@ -293,9 +294,9 @@ namespace AdventureGameCreator
             //          Available actions should be based on target, e.g. location or item
             if (key.ToUpper() == "S")
             {
-                if (_currentLocation.isSearchable)
+                if (_currentLocation.IsSearchable)
                 {
-                    if(!_currentLocation.searched)
+                    if (!_currentLocation.IsSearched)
                     {
                         _player.Search(ref _currentLocation);
                         DisplayCurrentLocation();       // TODO:    May need an ObservableEntity instead of doing this
