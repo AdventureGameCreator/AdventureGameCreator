@@ -6,13 +6,16 @@ using System;
 
 namespace AdventureGameCreator
 {
+    // NOTE:    Consider reducing number of _selected delegates to one : Option_Selected()
+    //          This one method will then call the other four methods and, can call DisplayCurrentLocation() to refresh the view
+
     // NOTE:    public fields removed but setters are required within properties in order to deserialize the xml data - I do not like!
 
     // NOTE:    Consider "actions" in more depth
     //          game actions = save / load / quit
-    //          player actions = attack / drop item
+    //          player actions = attack
     //          item actions = examine?  / use 
-    //          actions may / may not be relevant in all conditions, for example, death / lose location - no point searching
+    //          actions may / may not be relevant in all conditions, for example, death / lose location - no point searching / inventory
 
     // NOTE:    Consider refactoring player input so that delegates are handled in the same way as
     //          the ObservableList delegates
@@ -38,12 +41,19 @@ namespace AdventureGameCreator
         private const string dataFilePath = "/StreamingAssets/XML/adventure_data.xml";
         private const int startLocation = 0;
 
+        // enums
+        private enum ActionState { AtLocation, Search, ViewInventory, SelectInventoryItem, InventoryItemSelected };
+
         // private fields
         private Player _player = null;
         private Adventure _adventure = null;
         private Location _currentLocation = null;
 
         private InventoryDisplay _inventoryDisplay = null;
+
+        private ActionState _actionState = 0;
+
+        private bool _optionSelected = false;
 
         // delegate for managing keyboard input
         private delegate void OnKeyPress(string key);
@@ -77,6 +87,9 @@ namespace AdventureGameCreator
             // item options
             onKeyPress += Item_Selected;
 
+            // inventory item options
+            onKeyPress += InventoryItem_Selected;
+
             // action options
             onKeyPress += Action_Selected;
         }
@@ -91,6 +104,9 @@ namespace AdventureGameCreator
 
             // item options
             onKeyPress -= Item_Selected;
+
+            // inventory item options
+            onKeyPress -= InventoryItem_Selected;
 
             // action options
             onKeyPress -= Action_Selected;
@@ -154,6 +170,7 @@ namespace AdventureGameCreator
         /// </summary>
         private void Begin()
         {
+            _actionState = ActionState.AtLocation;
             DisplayCurrentLocation();
         }
 
@@ -177,25 +194,70 @@ namespace AdventureGameCreator
         {
             // TODO:    This needs much more work
             //          Available actions should be based on target, e.g. location or item
-            string actionOption;
 
-            _locationDescription.text += "\n\n";
+            string actionOption = string.Empty;
 
-            if (_currentLocation.IsSearchable)
+            switch (_actionState)
             {
-                if (!_currentLocation.IsSearched)
-                {
+                case ActionState.AtLocation:
+
+                    _locationDescription.text += "\n\n";
+
+                    if (_currentLocation.IsSearchable)
+                    {
+                        if (!_currentLocation.IsSearched)
+                        {
+                            // actionOption = "[ " + actionOption.key + " ] " + actionOption.descriptor + "   ";
+                            actionOption = "[S]earch   ";
+
+                            _locationDescription.text += actionOption;
+                        }
+                    }
+
                     // actionOption = "[ " + actionOption.key + " ] " + actionOption.descriptor + "   ";
-                    actionOption = "[S] Search   ";
+                    actionOption = "[I]nventory   ";
 
                     _locationDescription.text += actionOption;
-                }
+
+                    break;
+
+                case ActionState.Search:
+
+                    // TODO:    Search
+                    // Might not be needed / already displaying option
+                    break;
+
+                case ActionState.ViewInventory:
+
+                    _locationDescription.text += "\n\n";
+
+                    // actionOption = "[ " + actionOption.key + " ] " + actionOption.descriptor + "   ";
+                    actionOption = "[I]nventory   ";
+
+                    _locationDescription.text += actionOption;
+
+                    break;
+
+                case ActionState.SelectInventoryItem:
+
+                    // TODO:    Select inventory item
+                    // Might not be needed / already display inventory with items/options
+                    break;
+
+                case ActionState.InventoryItemSelected:
+
+                    _locationDescription.text += "\n\n";
+
+                    // actionOption = "[ " + actionOption.key + " ] " + actionOption.descriptor + "   ";
+                    actionOption = "[D]rop, [E]xamine, [U]se item, [C]ancel";
+
+                    _locationDescription.text += actionOption;
+
+                    break;
+                default:
+                    // TODO:    Need something here?
+                    break;
             }
-
-            // actionOption = "[ " + actionOption.key + " ] " + actionOption.descriptor + "   ";
-            actionOption = "[I] Inventory   ";
-
-            _locationDescription.text += actionOption;
         }
 
         /// <summary>
@@ -241,7 +303,23 @@ namespace AdventureGameCreator
         /// <param name="locationID">The ID of the location</param>
         private void MoveToLocation(int locationID)
         {
+            // TODO:    Consider mapping delegates to static rather than instance methods
+            //          Follow tutorial again on Unity website
+
+            // not sure if this is needed at this time
+            _currentLocation.Items.Updated -= LocationItems_Updated;
+            _currentLocation.Items.Changed -= LocationItems_Changed;
+
             _currentLocation = _adventure.Locations[locationID];
+
+            // TODO:    This is just at test
+            //          delegate allocations are going to be per "instance" of the object.
+            //          When I was updating the _currentLocation to a new instance, it would
+            //          lose the delegate it had.
+            //          I may need to tidy this up before assigning more...!
+            _currentLocation.Items.Updated += LocationItems_Updated;
+            _currentLocation.Items.Changed += LocationItems_Changed;
+
             DisplayCurrentLocation();
         }
 
@@ -251,13 +329,21 @@ namespace AdventureGameCreator
         /// <param name="key">The key which was pressed</param>
         private void Connection_Selected(string key)
         {
-            foreach (Connection connection in _currentLocation.Connections)
+            if (!_optionSelected)
             {
-                if (connection.Key.ToUpper() == key.ToUpper())
+                if (_actionState == ActionState.AtLocation)
                 {
-                    MoveToLocation(connection.ID);
+                    foreach (Connection connection in _currentLocation.Connections)
+                    {
+                        if (connection.Key.ToUpper() == key.ToUpper())
+                        {
+                            _optionSelected = true;
 
-                    break;
+                            MoveToLocation(connection.ID);
+
+                            break;
+                        }
+                    }
                 }
             }
         }
@@ -268,21 +354,60 @@ namespace AdventureGameCreator
         /// <param name="key">The key which was pressed</param>
         private void Item_Selected(string key)
         {
-            foreach (Item item in _currentLocation.Items)
+            if (!_optionSelected)
             {
-                if (item.IsVisible)
+                if (_actionState == ActionState.AtLocation)
                 {
-                    if (item.Key.ToUpper() == key.ToUpper())
+                    foreach (Item item in _currentLocation.Items)
                     {
-                        _player.Take(item);
+                        if (item.IsVisible)
+                        {
+                            if (item.Key.ToUpper() == key.ToUpper())
+                            {
+                                _optionSelected = true;
 
-                        _currentLocation.Items.Remove(item);
+                                _player.Take(item);
 
-                        break;
+                                _currentLocation.Items.Remove(item);
+
+                                break;
+                            }
+                        }
                     }
                 }
             }
         }
+
+
+
+        /// <summary>
+        /// Checks to see if an inventory item has been selected
+        /// </summary>
+        /// <param name="key">The key which was pressed</param>
+        private void InventoryItem_Selected(string key)
+        {
+            if (!_optionSelected)
+            {
+                if (_actionState == ActionState.ViewInventory)
+                {
+                    foreach (Item item in _player.Inventory.Items)
+                    {
+                        if (item.Key.ToUpper() == key.ToUpper())
+                        {
+                            _optionSelected = true;
+
+                            _actionState = ActionState.InventoryItemSelected;
+
+                            item.IsSelected = true;         // NOTE:    Does not cause a "Changed" event to be triggered on the item collection
+                            DisplayCurrentLocation();       // TODO:    May need an ObservableEntity instead of doing this
+
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
 
         /// <summary>
         /// Checks to see if an action has been selected
@@ -292,21 +417,113 @@ namespace AdventureGameCreator
         {
             // TODO:    This needs much more work 
             //          Available actions should be based on target, e.g. location or item
-            if (key.ToUpper() == "S")
-            {
-                if (_currentLocation.IsSearchable)
-                {
-                    if (!_currentLocation.IsSearched)
-                    {
-                        _player.Search(ref _currentLocation);
-                        DisplayCurrentLocation();       // TODO:    May need an ObservableEntity instead of doing this
-                    }
-                }
-            }
 
-            if (key.ToUpper() == "I")
+            if (!_optionSelected)
             {
-                _inventoryDisplay.Toggle();
+
+                switch (_actionState)
+                {
+                    case ActionState.AtLocation:
+
+                        // TODO:    Refactor - this is "listening for"..
+                        if (key.ToUpper() == "S")
+                        {
+                            _optionSelected = true;
+
+                            if (_currentLocation.IsSearchable)
+                            {
+                                if (!_currentLocation.IsSearched)
+                                {
+                                    _player.Search(ref _currentLocation);
+                                    DisplayCurrentLocation();       // TODO:    May need an ObservableEntity instead of doing this
+                                }
+                            }
+                        }
+
+                        // TODO:    Refactor - this is "listening for"..
+                        if (key.ToUpper() == "I")
+                        {
+                            _optionSelected = true;
+
+                            _actionState = ActionState.ViewInventory;
+
+                            _inventoryDisplay.Toggle();
+                        }
+                        break;
+
+                    case ActionState.ViewInventory:
+
+                        // TODO:    Refactor - this is "listening for"..
+                        if (key.ToUpper() == "I")
+                        {
+                            _optionSelected = true;
+
+                            _actionState = ActionState.AtLocation;
+
+                            _inventoryDisplay.Toggle();
+                        }
+                        break;
+
+                    case ActionState.InventoryItemSelected:
+
+                        // Drop item
+                        if (key.ToUpper() == "D")
+                        {
+                            _optionSelected = true;
+
+                            foreach (Item item in _player.Inventory.Items)
+                            {
+                                if (item.IsSelected)
+                                {
+                                    item.IsSelected = false;
+
+                                    _actionState = ActionState.ViewInventory;
+
+                                    _player.Drop(item);
+
+                                    _currentLocation.Items.Add(item);
+
+                                    break;
+                                }
+                            }
+                        }
+
+                        // TODO:    Examine item
+                        if (key.ToUpper() == "E")
+                        {
+                            _optionSelected = true;
+                            throw new NotImplementedException("Examining items has not yet been implemented.");
+                        }
+
+                        // TODO:    Use item
+                        if (key.ToUpper() == "U")
+                        {
+                            _optionSelected = true;
+                            throw new NotImplementedException("Using items has not yet been implemented.");
+                        }
+
+                        // Drop item
+                        if (key.ToUpper() == "C")
+                        {
+                            _optionSelected = true;
+
+                            foreach (Item item in _player.Inventory.Items)
+                            {
+                                if (item.IsSelected)
+                                {
+                                    item.IsSelected = false;
+
+                                    _actionState = ActionState.ViewInventory;   // change state back to inventory view
+
+                                    DisplayCurrentLocation();
+
+                                    break;
+                                }
+                            }
+                        }
+
+                        break;
+                }
             }
         }
 
@@ -318,6 +535,32 @@ namespace AdventureGameCreator
         private void Update()
         {
             CheckForPlayerInput();
+        }
+
+
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        private void OnGUI()
+        {
+            Event e = Event.current;
+
+            if (e.type == EventType.KeyDown)
+            {
+                if (Input.GetKeyDown(e.keyCode))
+                {
+                    //  Debug.Log("Down: " + e.keyCode);
+                }
+            }
+            else if (e.type == EventType.keyUp)
+            {
+                if (Input.GetKeyUp(e.keyCode))
+                {
+                    _optionSelected = false;       // NOTE:    Resets option selected bool
+                }
+            }
         }
 
         /// <summary>
@@ -333,7 +576,6 @@ namespace AdventureGameCreator
                 {
                     input = input.Substring(0, 1);
 
-                    // NOTE:    Refactor as it will be need for other actions for each location
                     onKeyPress(input);
                 }
             }

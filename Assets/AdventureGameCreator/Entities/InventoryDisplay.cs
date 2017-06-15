@@ -84,7 +84,7 @@ namespace AdventureGameCreator.UI
 
             foreach (Item item in _inventory.Items)
             {
-                _display.text += item.Name + "\n";
+                _display.text += "[" + item.Key + "] " + item.Name + "\n";
             }
         }
     }

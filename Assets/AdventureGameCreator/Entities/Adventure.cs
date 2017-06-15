@@ -83,7 +83,7 @@ namespace AdventureGameCreator.Entities
                     }
                 }
 
-                // TODO:    Check for the use of keys for reserved words (actions [S]earch etc)
+                // TODO:    Check for the use of keys for reserved words (actions [S]earch, [I]nventory etc)
 
             }
         }
