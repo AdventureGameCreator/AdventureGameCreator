@@ -67,7 +67,18 @@ namespace AdventureGameCreator.Entities
                     }
                     else
                     {
-                        throw new DuplicateConnectionKeyFoundException("Connection Key '" + connection.Key.ToUpper() + "' already exists for Location : '" + location.Title + "'");
+                        throw new DuplicateKeyException("Connection Key '" + connection.Key.ToUpper() + "' already exists for Location : '" + location.Title + "'");
+                    }
+
+                    // NOTE:    Hard coded and duplicated, for now.
+                    if (connection.Key.ToUpper() == "S")
+                    {
+                        throw new ReservedKeyException("Connection ID : '" + connection.ID + "' uses a reserved key for Location : '" + location.Title + "'");
+                    }
+
+                    if (connection.Key.ToUpper() == "I")
+                    {
+                        throw new ReservedKeyException("Connection ID : '" + connection.ID + "' uses a reserved key for Location : '" + location.Title + "'");
                     }
                 }
 
@@ -79,11 +90,20 @@ namespace AdventureGameCreator.Entities
                     }
                     else
                     {
-                        throw new DuplicateConnectionKeyFoundException("Item Key '" + item.Key.ToUpper() + "' already exists for Location : '" + location.Title + "'");
+                        throw new DuplicateKeyException("Item Key '" + item.Key.ToUpper() + "' already exists for Location : '" + location.Title + "'");
+                    }
+
+                    // NOTE:    Hard coded and duplicated, for now.
+                    if (item.Key.ToUpper() == "S")
+                    {
+                        throw new ReservedKeyException("Item : '" + item.Name + "' uses a reserved key for Location : '" + location.Title + "'");
+                    }
+                    
+                    if (item.Key.ToUpper() == "I")
+                    {
+                        throw new ReservedKeyException("Item : '" + item.Name + "' uses a reserved key for Location : '" + location.Title + "'");
                     }
                 }
-
-                // TODO:    Check for the use of keys for reserved words (actions [S]earch, [I]nventory etc)
 
             }
         }

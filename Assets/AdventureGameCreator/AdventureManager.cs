@@ -39,7 +39,7 @@ namespace AdventureGameCreator
         private const int startLocation = 0;
 
         // enums
-        private enum ActionState { AtLocation, Search, ViewInventory, SelectInventoryItem, InventoryItemSelected };
+        private enum ActionState { AtLocation, ViewInventory, InventoryItemSelected };
 
         // private fields
         private Player _player = null;
@@ -171,9 +171,6 @@ namespace AdventureGameCreator
         /// </summary>
         private void DisplayActions()
         {
-            // TODO:    This needs much more work
-            //          Available actions should be based on target, e.g. location or item
-
             string actionOption = string.Empty;
 
             switch (_actionState)
@@ -200,12 +197,6 @@ namespace AdventureGameCreator
 
                     break;
 
-                case ActionState.Search:
-
-                    // TODO:    Search
-                    // Might not be needed / already displaying option
-                    break;
-
                 case ActionState.ViewInventory:
 
                     _locationDescription.text += "\n\n";
@@ -217,12 +208,6 @@ namespace AdventureGameCreator
 
                     break;
 
-                case ActionState.SelectInventoryItem:
-
-                    // TODO:    Select inventory item
-                    // Might not be needed / already display inventory with items/options
-                    break;
-
                 case ActionState.InventoryItemSelected:
 
                     _locationDescription.text += "\n\n";
@@ -232,9 +217,6 @@ namespace AdventureGameCreator
 
                     _locationDescription.text += actionOption;
 
-                    break;
-                default:
-                    // TODO:    Need something here?
                     break;
             }
         }
@@ -396,8 +378,8 @@ namespace AdventureGameCreator
 
                             _actionState = ActionState.InventoryItemSelected;
 
-                            item.IsSelected = true;         // NOTE:    Does not cause a "Changed" event to be triggered on the item collection
-                            DisplayCurrentLocation();       // TODO:    May need an ObservableEntity instead of doing this
+                            item.IsSelected = true;
+                            DisplayCurrentLocation();
 
                             break;
                         }
@@ -413,9 +395,6 @@ namespace AdventureGameCreator
         /// <param name="key">The key which was pressed</param>
         private void CheckActionOptions(string key)
         {
-            // TODO:    This needs much more work 
-            //          Available actions should be based on target, e.g. location or item
-
             if (!_optionSelected)
             {
 
@@ -433,7 +412,7 @@ namespace AdventureGameCreator
                                 if (!_currentLocation.IsSearched)
                                 {
                                     _player.Search(ref _currentLocation);
-                                    DisplayCurrentLocation();       // TODO:    May need an ObservableEntity instead of doing this
+                                    DisplayCurrentLocation();
                                 }
                             }
                         }
