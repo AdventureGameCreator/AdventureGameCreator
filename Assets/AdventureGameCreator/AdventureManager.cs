@@ -6,9 +6,6 @@ using System;
 
 namespace AdventureGameCreator
 {
-    // NOTE:    Consider reducing number of _selected delegates to one : Option_Selected()
-    //          This one method will then call the other four methods and, can call DisplayCurrentLocation() to refresh the view
-
     // NOTE:    public fields removed but setters are required within properties in order to deserialize the xml data - I do not like!
 
     // NOTE:    Consider "actions" in more depth
@@ -81,17 +78,8 @@ namespace AdventureGameCreator
         /// </summary>
         private void SubscribeDelegates()
         {
-            // connection options
-            onKeyPress += Connection_Selected;
-
-            // item options
-            onKeyPress += Item_Selected;
-
-            // inventory item options
-            onKeyPress += InventoryItem_Selected;
-
-            // action options
-            onKeyPress += Action_Selected;
+            // option selected
+            onKeyPress += Option_Selected;
         }
 
         /// <summary>
@@ -99,17 +87,8 @@ namespace AdventureGameCreator
         /// </summary>
         private void UnsubscribeDelegates()
         {
-            // connection options
-            onKeyPress -= Connection_Selected;
-
-            // item options
-            onKeyPress -= Item_Selected;
-
-            // inventory item options
-            onKeyPress -= InventoryItem_Selected;
-
-            // action options
-            onKeyPress -= Action_Selected;
+            // option selected
+            onKeyPress -= Option_Selected;
         }
 
         /// <summary>
@@ -324,10 +303,29 @@ namespace AdventureGameCreator
         }
 
         /// <summary>
+        /// Handles adventure option selection
+        /// </summary>
+        /// <param name="key">The key which was pressed</param>
+        private void Option_Selected(string key)
+        {
+            // connection options
+            CheckConnectionOptions(key);
+
+            // item options
+            CheckItemOptions(key);
+
+            // inventory item options
+            CheckInventoryItemOptions(key);
+
+            // action options
+            CheckActionOptions(key);
+        }
+
+        /// <summary>
         /// Checks to see if a connection has been selected
         /// </summary>
         /// <param name="key">The key which was pressed</param>
-        private void Connection_Selected(string key)
+        private void CheckConnectionOptions(string key)
         {
             if (!_optionSelected)
             {
@@ -352,7 +350,7 @@ namespace AdventureGameCreator
         /// Checks to see if an item has been selected
         /// </summary>
         /// <param name="key">The key which was pressed</param>
-        private void Item_Selected(string key)
+        private void CheckItemOptions(string key)
         {
             if (!_optionSelected)
             {
@@ -384,7 +382,7 @@ namespace AdventureGameCreator
         /// Checks to see if an inventory item has been selected
         /// </summary>
         /// <param name="key">The key which was pressed</param>
-        private void InventoryItem_Selected(string key)
+        private void CheckInventoryItemOptions(string key)
         {
             if (!_optionSelected)
             {
@@ -413,7 +411,7 @@ namespace AdventureGameCreator
         /// Checks to see if an action has been selected
         /// </summary>
         /// <param name="key">The key which was pressed</param>
-        private void Action_Selected(string key)
+        private void CheckActionOptions(string key)
         {
             // TODO:    This needs much more work 
             //          Available actions should be based on target, e.g. location or item
