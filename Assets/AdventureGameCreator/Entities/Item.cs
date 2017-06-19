@@ -1,6 +1,8 @@
-﻿namespace AdventureGameCreator.Entities
+﻿using System;
+
+namespace AdventureGameCreator.Entities
 {
-    public class Item
+    public class Item 
     {
         private string _name;
         private string _key;

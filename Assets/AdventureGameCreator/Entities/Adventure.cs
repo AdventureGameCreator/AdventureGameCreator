@@ -10,6 +10,7 @@ namespace AdventureGameCreator.Entities
     {
         private ObservableList<Location> _locations;
 
+        private static List<string> _validationKeys = new List<string>();
 
         /// <summary>
         /// Default constructor
@@ -37,13 +38,10 @@ namespace AdventureGameCreator.Entities
         /// <returns></returns>
         public static Adventure Load(string dataFilePath)
         {
-            // Adventure adventure = XMLDataService.Instance.Load<Adventure>(dataFilePath);
-
             Type[] extraTypes = new Type[] { typeof(Weapon), typeof(Equipment) };
 
             Adventure adventure = XMLDataService.Instance.Load<Adventure>(dataFilePath, extraTypes);
 
-            // validate adventure data
             ValidateAdventureData(adventure);
 
             return adventure;
@@ -56,55 +54,66 @@ namespace AdventureGameCreator.Entities
         {
             foreach (Location location in adventure.Locations)
             {
-                List<string> keys = new List<string>();
+                _validationKeys.Clear();
 
-                // TODO:    Refactor to remove duplication and better handle exceptions
-                foreach (Connection connection in location.Connections)
-                {
-                    if (!keys.Contains(connection.Key.ToUpper()))
-                    {
-                        keys.Add(connection.Key.ToUpper());
-                    }
-                    else
-                    {
-                        throw new DuplicateKeyException("Connection Key '" + connection.Key.ToUpper() + "' already exists for Location : '" + location.Title + "'");
-                    }
+                ValidateConnectionData(location);
+                ValidateItemData(location);
+            }
+        }
 
-                    // NOTE:    Hard coded and duplicated, for now.
-                    if (connection.Key.ToUpper() == "S")
-                    {
-                        throw new ReservedKeyException("Connection ID : '" + connection.ID + "' uses a reserved key for Location : '" + location.Title + "'");
-                    }
+        /// <summary>
+        /// Validates connection data
+        /// </summary>
+        /// <param name="location">The location containing the connections</param>
+        private static void ValidateConnectionData(Location location)
+        {
+            foreach (Connection connection in location.Connections)
+            {
+                DuplicateKeyValidation(location.Title, connection.Key.ToUpper());
+                ReservedKeyValidation(location.Title, connection.Key.ToUpper());
+            }
+        }
 
-                    if (connection.Key.ToUpper() == "I")
-                    {
-                        throw new ReservedKeyException("Connection ID : '" + connection.ID + "' uses a reserved key for Location : '" + location.Title + "'");
-                    }
-                }
+        /// <summary>
+        /// Validates item data
+        /// </summary>
+        /// <param name="location">The location containing the items</param>
+        private static void ValidateItemData(Location location)
+        {
+            foreach (Item item in location.Items)
+            {
+                DuplicateKeyValidation(location.Title, item.Key.ToUpper());
+                ReservedKeyValidation(location.Title, item.Key.ToUpper());
+            }
+        }
 
-                foreach (Item item in location.Items)
-                {
-                    if (!keys.Contains(item.Key.ToUpper()))
-                    {
-                        keys.Add(item.Key.ToUpper());
-                    }
-                    else
-                    {
-                        throw new DuplicateKeyException("Item Key '" + item.Key.ToUpper() + "' already exists for Location : '" + location.Title + "'");
-                    }
+        /// <summary>
+        /// Checks for duplicate key usage
+        /// </summary>
+        /// <param name="location">The name of the location</param>
+        /// <param name="key">The key to validate</param>
+        private static void DuplicateKeyValidation(string location, string key)
+        {
+            if (!_validationKeys.Contains(key))
+            {
+                _validationKeys.Add(key);
+            }
+            else
+            {
+                throw new DuplicateKeyException("Key '" + key + "' already exists for Location '" + location + "'");
+            }
+        }
 
-                    // NOTE:    Hard coded and duplicated, for now.
-                    if (item.Key.ToUpper() == "S")
-                    {
-                        throw new ReservedKeyException("Item : '" + item.Name + "' uses a reserved key for Location : '" + location.Title + "'");
-                    }
-                    
-                    if (item.Key.ToUpper() == "I")
-                    {
-                        throw new ReservedKeyException("Item : '" + item.Name + "' uses a reserved key for Location : '" + location.Title + "'");
-                    }
-                }
-
+        /// <summary>
+        /// Checks for reserved key usage
+        /// </summary>
+        /// <param name="location">The name of the location</param>
+        /// <param name="key">The key to validate</param>
+        private static void ReservedKeyValidation(string location, string key)
+        {
+            if (AdventureManager.ReservedKeys.Contains(key))
+            {
+                throw new ReservedKeyException("Key '" + key + "' is used by Location '" + location + "'");
             }
         }
     }

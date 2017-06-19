@@ -4,7 +4,7 @@
     <Location>
       <ID>0</ID>
       <Title>Entrance</Title>
-      <Description>You are standing at the entrance to an overgrown cave.  The fading daylight bearly illuminates a few feet insIDe. You take a moment to steady your nerves and prepare for what may lay ahead.  You light your torch.</Description>
+      <Description>You are standing at the entrance to an overgrown cave.  The fading daylight bearly illuminates a few feet inside. You take a moment to steady your nerves and prepare for what may lay ahead.  You light your torch.</Description>
       <IsSearchable>true</IsSearchable>
       <Connections>
         <Connection>

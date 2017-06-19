@@ -3,6 +3,7 @@ using UnityEngine.UI;
 using AdventureGameCreator.Entities;
 using AdventureGameCreator.UI;
 using System;
+using System.Collections.Generic;
 
 namespace AdventureGameCreator
 {
@@ -38,6 +39,8 @@ namespace AdventureGameCreator
         private const string dataFilePath = "/StreamingAssets/XML/adventure_data.xml";
         private const int startLocation = 0;
 
+        private static List<String> _reservedKeys = new List<string> { "S", "I" };  // NOTE: Must be uppercase
+
         // enums
         private enum ActionState { AtLocation, ViewInventory, InventoryItemSelected };
 
@@ -55,6 +58,15 @@ namespace AdventureGameCreator
         // delegate for managing keyboard input
         private delegate void OnKeyPress(string key);
         private OnKeyPress onKeyPress;
+
+
+        /// <summary>
+        /// Returns a list containing the reserved keys
+        /// </summary>
+        public static List<String> ReservedKeys
+        {
+            get { return _reservedKeys; }
+        }
 
 
         /// <summary>
@@ -290,6 +302,8 @@ namespace AdventureGameCreator
         /// <param name="key">The key which was pressed</param>
         private void Option_Selected(string key)
         {
+            key = key.ToUpper();
+
             // connection options
             CheckConnectionOptions(key);
 
@@ -315,7 +329,7 @@ namespace AdventureGameCreator
                 {
                     foreach (Connection connection in _currentLocation.Connections)
                     {
-                        if (connection.Key.ToUpper() == key.ToUpper())
+                        if (connection.Key.ToUpper() == key)
                         {
                             _optionSelected = true;
 
@@ -342,7 +356,7 @@ namespace AdventureGameCreator
                     {
                         if (item.IsVisible)
                         {
-                            if (item.Key.ToUpper() == key.ToUpper())
+                            if (item.Key.ToUpper() == key)
                             {
                                 _optionSelected = true;
 
@@ -372,7 +386,7 @@ namespace AdventureGameCreator
                 {
                     foreach (Item item in _player.Inventory.Items)
                     {
-                        if (item.Key.ToUpper() == key.ToUpper())
+                        if (item.Key.ToUpper() == key)
                         {
                             _optionSelected = true;
 
@@ -397,109 +411,132 @@ namespace AdventureGameCreator
         {
             if (!_optionSelected)
             {
-
                 switch (_actionState)
                 {
                     case ActionState.AtLocation:
 
-                        // TODO:    Refactor - this is "listening for"..
-                        if (key.ToUpper() == "S")
+                        switch (key)
                         {
-                            _optionSelected = true;
+                            case "S":
 
-                            if (_currentLocation.IsSearchable)
-                            {
-                                if (!_currentLocation.IsSearched)
-                                {
-                                    _player.Search(ref _currentLocation);
-                                    DisplayCurrentLocation();
-                                }
-                            }
-                        }
+                                Search();
+                                break;
 
-                        // TODO:    Refactor - this is "listening for"..
-                        if (key.ToUpper() == "I")
-                        {
-                            _optionSelected = true;
+                            case "I":
 
-                            _actionState = ActionState.ViewInventory;
-
-                            _inventoryDisplay.Toggle();
+                                ToggleInventory(ActionState.ViewInventory);
+                                break;
                         }
                         break;
 
                     case ActionState.ViewInventory:
 
-                        // TODO:    Refactor - this is "listening for"..
-                        if (key.ToUpper() == "I")
+                        switch (key)
                         {
-                            _optionSelected = true;
-
-                            _actionState = ActionState.AtLocation;
-
-                            _inventoryDisplay.Toggle();
+                            case "I":
+                                ToggleInventory(ActionState.AtLocation);
+                                break;
                         }
                         break;
 
                     case ActionState.InventoryItemSelected:
 
-                        // Drop item
-                        if (key.ToUpper() == "D")
+                        switch (key)
                         {
-                            _optionSelected = true;
+                            case "D":
+                                DropItem();
+                                break;
 
-                            foreach (Item item in _player.Inventory.Items)
-                            {
-                                if (item.IsSelected)
-                                {
-                                    item.IsSelected = false;
+                            case "E":
+                                ExamineItem();
+                                break;
 
-                                    _actionState = ActionState.ViewInventory;
+                            case "U":
+                                UseItem();
+                                break;
 
-                                    _player.Drop(item);
-
-                                    _currentLocation.Items.Add(item);
-
-                                    break;
-                                }
-                            }
-                        }
-
-                        // TODO:    Examine item
-                        if (key.ToUpper() == "E")
-                        {
-                            _optionSelected = true;
-                            throw new NotImplementedException("Examining items has not yet been implemented.");
-                        }
-
-                        // TODO:    Use item
-                        if (key.ToUpper() == "U")
-                        {
-                            _optionSelected = true;
-                            throw new NotImplementedException("Using items has not yet been implemented.");
-                        }
-
-                        // Drop item
-                        if (key.ToUpper() == "C")
-                        {
-                            _optionSelected = true;
-
-                            foreach (Item item in _player.Inventory.Items)
-                            {
-                                if (item.IsSelected)
-                                {
-                                    item.IsSelected = false;
-
-                                    _actionState = ActionState.ViewInventory;   // change state back to inventory view
-
-                                    DisplayCurrentLocation();
-
-                                    break;
-                                }
-                            }
+                            case "C":
+                                CancelInventoryItemSelection();
+                                break;
                         }
 
                         break;
+
+                }
+            }
+        }
+
+        private void CancelInventoryItemSelection()
+        {
+            _optionSelected = true;
+
+            foreach (Item item in _player.Inventory.Items)
+            {
+                if (item.IsSelected)
+                {
+                    item.IsSelected = false;
+
+                    _actionState = ActionState.ViewInventory;   // change state back to inventory view
+
+                    DisplayCurrentLocation();
+
+                    break;
+                }
+            }
+        }
+
+        private void UseItem()
+        {
+            _optionSelected = true;
+            throw new NotImplementedException("Using items has not yet been implemented.");
+        }
+
+        private void ExamineItem()
+        {
+            _optionSelected = true;
+            throw new NotImplementedException("Examining items has not yet been implemented.");
+        }
+
+        private void DropItem()
+        {
+            _optionSelected = true;
+
+            foreach (Item item in _player.Inventory.Items)
+            {
+                if (item.IsSelected)
+                {
+                    item.IsSelected = false;
+
+                    _actionState = ActionState.ViewInventory;
+
+                    _player.Drop(item);
+
+                    _currentLocation.Items.Add(item);
+
+                    break;
+                }
+            }
+        }
+
+        private void ToggleInventory(ActionState actionState)
+        {
+            _optionSelected = true;
+
+            _actionState = actionState;
+
+            _inventoryDisplay.Toggle();
+        }
+
+        private void Search()
+        {
+            _optionSelected = true;
+
+            if (_currentLocation.IsSearchable)
+            {
+                if (!_currentLocation.IsSearched)
+                {
+                    _player.Search(ref _currentLocation);
+                    DisplayCurrentLocation();
                 }
             }
         }

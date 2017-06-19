@@ -1,6 +1,6 @@
 ﻿namespace AdventureGameCreator.Entities
 {
-    public class Connection
+    public class Connection 
     {
         private int _id;
         private string _descriptor;
