@@ -42,7 +42,7 @@ namespace AdventureGameCreator
         private static List<String> _reservedKeys = new List<string> { "S", "I" };  // NOTE: Must be uppercase
 
         // enums
-        private enum ActionState { AtLocation, ViewInventory, InventoryItemSelected };
+        private enum ActionState { AtLocation, ViewInventory, InventoryItemSelected, ExaminingInventoryItem };
 
         // private fields
         private Player _player = null;
@@ -54,7 +54,7 @@ namespace AdventureGameCreator
         private ActionState _actionState = 0;
 
         private bool _optionSelected = false;
-
+        
         // delegate for managing keyboard input
         private delegate void OnKeyPress(string key);
         private OnKeyPress onKeyPress;
@@ -226,6 +226,19 @@ namespace AdventureGameCreator
 
                     // actionOption = "[ " + actionOption.key + " ] " + actionOption.descriptor + "   ";
                     actionOption = "[D]rop, [E]xamine, [U]se item, [C]ancel";
+
+                    _locationDescription.text += actionOption;
+
+                    break;
+
+                case ActionState.ExaminingInventoryItem:
+
+                    // TODO:    I don't like the duplicated state to handle the [E]xamine option being selected
+
+                    _locationDescription.text += "\n\n";
+
+                    // actionOption = "[ " + actionOption.key + " ] " + actionOption.descriptor + "   ";
+                    actionOption = "[D]rop, [U]se item, [C]ancel";
 
                     _locationDescription.text += actionOption;
 
@@ -462,6 +475,24 @@ namespace AdventureGameCreator
 
                         break;
 
+                    case ActionState.ExaminingInventoryItem:
+
+                        switch (key)
+                        {
+                            case "D":
+                                DropItem();
+                                break;
+
+                            case "U":
+                                UseItem();
+                                break;
+
+                            case "C":
+                                CancelInventoryItemSelection();
+                                break;
+                        }
+
+                        break;
                 }
             }
         }
@@ -494,7 +525,20 @@ namespace AdventureGameCreator
         private void ExamineItem()
         {
             _optionSelected = true;
-            throw new NotImplementedException("Examining items has not yet been implemented.");
+
+            foreach (Item item in _player.Inventory.Items)
+            {
+                if (item.IsSelected)
+                {
+                    _actionState = ActionState.ExaminingInventoryItem;
+
+                    DisplayCurrentLocation();
+
+                    _locationDescription.text += "\n\n" + item.Detail;
+
+                    break;
+                }
+            }
         }
 
         private void DropItem()

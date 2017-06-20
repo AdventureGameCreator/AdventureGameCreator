@@ -15,12 +15,14 @@
       </Connections>
       <Items>
         <Item xsi:type="Weapon">
-          <Name>Silver Dagger</Name>
+          <Name>Dagger</Name>
+          <Detail>The dagger is made from finely crafted silver, the blade shows no sign of damage and appears very sharp.</Detail>
           <Key>D</Key>
           <IsVisible>false</IsVisible>
         </Item>
         <Item xsi:type="Equipment">
           <Name>Rope</Name>
+          <Detail>You estimate the rope to be 10 metres in length and it appears to be in excellent condition.</Detail>
           <Key>R</Key>
           <IsVisible>false</IsVisible>
         </Item>

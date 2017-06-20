@@ -5,6 +5,7 @@ namespace AdventureGameCreator.Entities
     public class Item 
     {
         private string _name;
+        private string _detail;
         private string _key;
         private bool _isVisible;
         private bool _selected;
@@ -17,6 +18,15 @@ namespace AdventureGameCreator.Entities
         {
             get { return _name; }
             set { _name = value; }
+        }
+
+        /// <summary>
+        /// Returns the item's detail
+        /// </summary>
+        public string Detail
+        {
+            get { return _detail; }
+            set { _detail = value; }
         }
 
         /// <summary>
