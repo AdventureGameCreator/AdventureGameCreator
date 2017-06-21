@@ -27,6 +27,8 @@ namespace AdventureGameCreator
     //          data service to be used, XML, database, www etc
     //          Would mean exposing the underyling data service though
 
+
+    // TODO:    Refactor
     public class AdventureManager : MonoBehaviour
     {
         // UI components for display
@@ -42,7 +44,7 @@ namespace AdventureGameCreator
         private static List<String> _reservedKeys = new List<string> { "S", "I" };  // NOTE: Must be uppercase
 
         // enums
-        private enum ActionState { AtLocation, ViewInventory, InventoryItemSelected, ExaminingInventoryItem };
+        private enum ActionState { AtLocation, LocationItemSelected, ExaminingLocationItem, ViewInventory, InventoryItemSelected, ExaminingInventoryItem };
 
         // private fields
         private Player _player = null;
@@ -209,6 +211,30 @@ namespace AdventureGameCreator
 
                     break;
 
+                case ActionState.LocationItemSelected:
+
+                    _locationDescription.text += "\n\n";
+
+                    // actionOption = "[ " + actionOption.key + " ] " + actionOption.descriptor + "   ";
+                    actionOption = "[T]ake, [E]xamine, [U]se item, [C]ancel";
+
+                    _locationDescription.text += actionOption;
+
+                    break;
+
+                case ActionState.ExaminingLocationItem:
+
+                    // TODO:    I don't like the duplicated state to handle the [E]xamine option being selected
+
+                    _locationDescription.text += "\n\n";
+
+                    // actionOption = "[ " + actionOption.key + " ] " + actionOption.descriptor + "   ";
+                    actionOption = "[T]ake, [U]se item, [C]ancel";
+
+                    _locationDescription.text += actionOption;
+
+                    break;
+
                 case ActionState.ViewInventory:
 
                     _locationDescription.text += "\n\n";
@@ -361,6 +387,7 @@ namespace AdventureGameCreator
         /// <param name="key">The key which was pressed</param>
         private void CheckItemOptions(string key)
         {
+            // TODO:    Refactor this, too long
             if (!_optionSelected)
             {
                 if (_actionState == ActionState.AtLocation)
@@ -373,9 +400,10 @@ namespace AdventureGameCreator
                             {
                                 _optionSelected = true;
 
-                                _player.Take(item);
+                                _actionState = ActionState.LocationItemSelected;
 
-                                _currentLocation.Items.Remove(item);
+                                item.IsSelected = true;
+                                DisplayCurrentLocation();
 
                                 break;
                             }
@@ -442,7 +470,48 @@ namespace AdventureGameCreator
                         }
                         break;
 
-                    case ActionState.ViewInventory:
+                    case ActionState.LocationItemSelected:
+
+                        switch(key)
+                        {
+                            case "T":
+                                TakeItem();
+                                break;
+
+                            case "E":
+                                ExamineLocationItem();
+                                break;
+
+                            case "U":
+                                UseItem();
+                                break;
+
+                            case "C":
+                                CancelLocationItemSelection();
+                                break;
+                        }
+                        break;
+
+                    case ActionState.ExaminingLocationItem:
+
+                        switch (key)
+                        {
+                            case "T":
+                                TakeItem();
+                                break;
+
+                            case "U":
+                                UseItem();
+                                break;
+
+                            case "C":
+                                CancelLocationItemSelection();
+                                break;
+                        }
+
+                        break;
+
+                    case ActionState.ViewInventory:     // TODO:    Rename "View" to "Viewing"
 
                         switch (key)
                         {
@@ -461,7 +530,7 @@ namespace AdventureGameCreator
                                 break;
 
                             case "E":
-                                ExamineItem();
+                                ExamineInventoryItem();
                                 break;
 
                             case "U":
@@ -497,6 +566,7 @@ namespace AdventureGameCreator
             }
         }
 
+        // TODO:    Refactor to remove duplicate "CancelLocationItemSelection"
         private void CancelInventoryItemSelection()
         {
             _optionSelected = true;
@@ -507,7 +577,7 @@ namespace AdventureGameCreator
                 {
                     item.IsSelected = false;
 
-                    _actionState = ActionState.ViewInventory;   // change state back to inventory view
+                    _actionState = ActionState.ViewInventory;
 
                     DisplayCurrentLocation();
 
@@ -522,7 +592,8 @@ namespace AdventureGameCreator
             throw new NotImplementedException("Using items has not yet been implemented.");
         }
 
-        private void ExamineItem()
+        // TODO:    Refactor to remove duplicate "ExamineLocationItem"
+        private void ExamineInventoryItem()
         {
             _optionSelected = true;
 
@@ -581,6 +652,67 @@ namespace AdventureGameCreator
                 {
                     _player.Search(ref _currentLocation);
                     DisplayCurrentLocation();
+                }
+            }
+        }
+
+        private void TakeItem()
+        {
+            _optionSelected = true;
+
+            foreach (Item item in _currentLocation.Items)
+            {
+                if (item.IsSelected)
+                {
+                    item.IsSelected = false;
+
+                    _actionState = ActionState.AtLocation;
+
+                    _player.Take(item);
+
+                    _currentLocation.Items.Remove(item);
+
+                    break;
+                }
+            }
+        }
+
+        // TODO:    Refactor to lose duplication "ExamineInventoryItem"
+        private void ExamineLocationItem()
+        {
+            _optionSelected = true;
+
+            foreach (Item item in _currentLocation.Items)
+            {
+                if (item.IsSelected)
+                {
+                    _actionState = ActionState.ExaminingLocationItem;
+
+                    DisplayCurrentLocation();
+
+                    _locationDescription.text += "\n\n" + item.Detail;
+
+                    break;
+                }
+            }
+        }
+
+        // TODO:    Refactor to lose duplication "CancelInventoryItemSelection"
+        private void CancelLocationItemSelection()
+        {
+            _optionSelected = true;
+
+            foreach (Item item in _currentLocation.Items)
+            {
+                if (item.IsSelected)
+                {
+                    item.IsSelected = false;
+
+                    _actionState = ActionState.AtLocation;
+
+                    DisplayCurrentLocation();
+
+                    break;
                 }
             }
         }
