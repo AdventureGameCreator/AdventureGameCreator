@@ -8,7 +8,6 @@ namespace AdventureGameCreator.Entities
         private string _detail;
         private string _key;
         private bool _isVisible;
-        private bool _selected;
 
 
         /// <summary>
@@ -45,15 +44,6 @@ namespace AdventureGameCreator.Entities
         {
             get { return _isVisible; }
             set { _isVisible = value; }
-        }
-
-        /// <summary>
-        /// Indicates whether the item is selected by the player
-        /// </summary>
-        public bool IsSelected
-        {
-            get { return _selected; }
-            set { _selected = value; }
         }
     }
 }

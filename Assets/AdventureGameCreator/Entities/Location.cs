@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using AdventureGameCreator.Collections.Generic;
-using System.Xml.Serialization;
 
 namespace AdventureGameCreator.Entities
 {

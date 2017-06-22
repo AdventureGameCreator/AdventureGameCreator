@@ -4,6 +4,8 @@
     {
         private Inventory _inventory;
 
+        private Item _selectedItem;
+
 
         /// <summary>
         /// Default constructor
@@ -22,6 +24,14 @@
             get { return _inventory; }
         }
 
+        /// <summary>
+        /// Returns the player's currently selected item
+        /// </summary>
+        /// <remarks>The item does </remarks>
+        public Item SelectedItem
+        {
+            get { return _selectedItem; }
+        }
 
         /// <summary>
         /// Adds the specified item to the inventory
@@ -49,5 +59,17 @@
         {
             location.Search();
         }
+
+
+        public void SelectItem(Item item)
+        {
+            _selectedItem = item;
+        }
+
+        public void UnselectItem()
+        {
+            _selectedItem = null;
+        }
+
     }
 }
