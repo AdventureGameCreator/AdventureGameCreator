@@ -1,22 +1,19 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
-using AdventureGameCreator.Entities;
 using AdventureGameCreator.Collections.Generic;
+using AdventureGameCreator.Entities;
 using AdventureGameCreator.UI;
 using System;
 using System.Collections.Generic;
 
 namespace AdventureGameCreator
 {
-    // NOTE:    Could be useful as a method for finding specific list items
-    //          Item selectedItem = list.Find(delegate (Item item) { return item.IsSelected == true; });
-
     // NOTE:    public fields removed but setters are required within properties in order to deserialize the xml data - I do not like!
 
     // NOTE:    Consider "actions" in more depth
     //          game actions = save / load / quit
     //          player actions = attack
-    //          item actions = examine?  / use 
+    //          item actions =  use 
     //          actions may / may not be relevant in all conditions, for example, death / lose location - no point searching / inventory
 
     // NOTE:    Consider refactoring player input so that delegates are handled in the same way as
@@ -60,7 +57,7 @@ namespace AdventureGameCreator
         private ActionState _actionState = 0;
 
         private bool _optionSelected = false;
-        
+
         // delegate for managing keyboard input
         private delegate void OnKeyPress(string key);
         private OnKeyPress onKeyPress;
@@ -362,18 +359,25 @@ namespace AdventureGameCreator
             {
                 if (_actionState == ActionState.AtLocation)
                 {
-                    foreach (Connection connection in _currentLocation.Connections)
-                    {
-                        if (connection.Key.ToUpper() == key)
-                        {
-                            _optionSelected = true;
-
-                            MoveToLocation(connection.ID);
-
-                            break;
-                        }
-                    }
+                    SelectConnection(key, _currentLocation.Connections);
                 }
+            }
+        }
+
+        /// <summary>
+        /// Moves the player to the desired location if a valid selection is made
+        /// </summary>
+        /// <param name="key">The key which was pressed</param>
+        /// <param name="connections">The current location's connections</param>
+        private void SelectConnection(string key, List<Connection> connections)
+        {
+            Connection selectedConnection = connections.Find(delegate (Connection connection) { return connection.Key == key; });
+
+            if (selectedConnection != null)
+            {
+                _optionSelected = true;
+
+                MoveToLocation(selectedConnection.ID);
             }
         }
 
@@ -383,34 +387,14 @@ namespace AdventureGameCreator
         /// <param name="key">The key which was pressed</param>
         private void CheckItemOptions(string key)
         {
-            // TODO:    Refactor this, too long
             if (!_optionSelected)
             {
                 if (_actionState == ActionState.AtLocation)
                 {
-                    foreach (Item item in _currentLocation.Items)
-                    {
-                        if (item.IsVisible)
-                        {
-                            if (item.Key.ToUpper() == key)
-                            {
-                                _optionSelected = true;
-
-                                _actionState = ActionState.LocationItemSelected;
-
-                                _player.SelectItem(item);
-
-                                DisplayCurrentLocation();
-
-                                break;
-                            }
-                        }
-                    }
+                    SelectItem(key, _currentLocation.Items, ActionState.LocationItemSelected);
                 }
             }
         }
-
-
 
         /// <summary>
         /// Checks to see if an inventory item has been selected
@@ -422,25 +406,32 @@ namespace AdventureGameCreator
             {
                 if (_actionState == ActionState.ViewingInventory)
                 {
-                    foreach (Item item in _player.Inventory.Items)
-                    {
-                        if (item.Key.ToUpper() == key)
-                        {
-                            _optionSelected = true;
-
-                            _actionState = ActionState.InventoryItemSelected;
-
-                            _player.SelectItem(item);
-
-                            DisplayCurrentLocation();
-
-                            break;
-                        }
-                    }
+                    SelectItem(key, _player.Inventory.Items, ActionState.InventoryItemSelected);
                 }
             }
         }
 
+        /// <summary>
+        /// Sets the player's selected item if a valid selecton is made
+        /// </summary>
+        /// <param name="key">The key which was pressed</param>
+        /// <param name="items">The list of items</param>
+        /// <param name="actionState">The ActionState to return to</param>
+        private void SelectItem(string key, ObservableList<Item> items, ActionState actionState)
+        {
+            Item selectedItem = items.Find(delegate (Item item) { return item.Key == key; });
+
+            if (selectedItem != null)
+            {
+                _optionSelected = true;
+
+                _actionState = actionState;
+
+                _player.SelectItem(selectedItem);
+
+                DisplayCurrentLocation();
+            }
+        }
 
         /// <summary>
         /// Checks to see if an action has been selected
@@ -470,7 +461,7 @@ namespace AdventureGameCreator
 
                     case ActionState.LocationItemSelected:
 
-                        switch(key)
+                        switch (key)
                         {
                             case "T":
                                 TakeItem();
@@ -564,6 +555,9 @@ namespace AdventureGameCreator
             }
         }
 
+        /// <summary>
+        /// Updates the current location revealing any searchable items
+        /// </summary>
         private void Search()
         {
             _optionSelected = true;
@@ -578,6 +572,10 @@ namespace AdventureGameCreator
             }
         }
 
+        /// <summary>
+        /// Toggles the display of the inventory
+        /// </summary>
+        /// <param name="actionState">The ActionState to return to</param>
         private void ToggleInventory(ActionState actionState)
         {
             _optionSelected = true;
@@ -587,7 +585,9 @@ namespace AdventureGameCreator
             _inventoryDisplay.Toggle();
         }
 
-
+        /// <summary>
+        /// Removes the player's selected item from the current location and adds it to their inventory
+        /// </summary>
         private void TakeItem()
         {
             _optionSelected = true;
@@ -601,7 +601,9 @@ namespace AdventureGameCreator
             _player.UnselectItem();
         }
 
-
+        /// <summary>
+        /// Adds the player's selected item to the current location and removes it from their inventory
+        /// </summary>
         private void DropItem()
         {
             _optionSelected = true;
@@ -615,7 +617,9 @@ namespace AdventureGameCreator
             _player.UnselectItem();
         }
 
-
+        /// <summary>
+        /// Uses the player's selected item at the current location
+        /// </summary>
         private void UseItem()
         {
             _optionSelected = true;
@@ -623,7 +627,7 @@ namespace AdventureGameCreator
         }
 
         /// <summary>
-        /// Cancel the selection of an item
+        /// Cancels the selection of an item
         /// </summary>
         /// <param name="actionState">The ActionState to return to</param>
         private void CancelItemSelection(ActionState actionState)
@@ -637,6 +641,10 @@ namespace AdventureGameCreator
             DisplayCurrentLocation();
         }
 
+        /// <summary>
+        /// Updates the current location with a description of the examined item
+        /// </summary>
+        /// <param name="actionState">The ActionState to return to</param>
         private void ExamineItem(ActionState actionState)
         {
             _optionSelected = true;
@@ -657,7 +665,7 @@ namespace AdventureGameCreator
         }
 
         /// <summary>
-        /// 
+        /// Handles GUI events
         /// </summary>
         private void OnGUI()
         {
